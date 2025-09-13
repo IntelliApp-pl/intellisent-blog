@@ -17,7 +17,7 @@ github:
   username: "IntelliApp-pl"
   repository: "intellisent-blog"
   # GitHub token for private repos (optional) - read from environment variable
-  token: <%= ENV['GITHUB_TOKEN'] %>
+  token: <%= ENV['BLOG_GITHUB_TOKEN'] %>
 
 # Build settings
 markdown: kramdown
