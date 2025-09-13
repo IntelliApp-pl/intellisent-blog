@@ -1,0 +1,77 @@
+// _sass/main.scss - Additional SCSS that gets compiled by Jekyll
+
+// Custom variables
+$intellisent-primary: #667eea;
+$intellisent-secondary: #764ba2;
+$intellisent-success: #10b981;
+$intellisent-warning: #f59e0b;
+$intellisent-danger: #ef4444;
+$intellisent-info: #3b82f6;
+
+// Mixins
+@mixin gradient-bg($color1: $intellisent-primary, $color2: $intellisent-secondary) {
+  background: linear-gradient(135deg, $color1 0%, $color2 100%);
+}
+
+@mixin hover-lift {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  }
+}
+
+@mixin card-hover {
+  @include hover-lift;
+  border: none;
+  
+  &:hover {
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+  }
+}
+
+// Component styles
+.btn-intellisent {
+  @include gradient-bg;
+  border: none;
+  color: white;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    @include gradient-bg($intellisent-secondary, $intellisent-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba($intellisent-primary, 0.4);
+  }
+}
+
+.card-hover {
+  @include card-hover;
+}
+
+.text-gradient {
+  @include gradient-bg;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+// Dark mode support (for future use)
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bs-body-bg: #1a202c;
+    --bs-body-color: #e2e8f0;
+  }
+}
+
+// Print styles
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .card {
+    box-shadow: none !important;
+    border: 1px solid #dee2e6 !important;
+  }
+}

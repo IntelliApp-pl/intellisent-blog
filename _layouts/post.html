@@ -1,0 +1,167 @@
+---
+layout: default
+---
+
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Article Header -->
+            <article class="blog-post">
+                <header class="mb-4">
+                    <div class="mb-3">
+                        {% for label in page.labels %}
+                        <span class="badge rounded-pill me-1" 
+                              style="background-color: #{{ label.color }}; color: {% if label.color == 'ffffff' or label.color == 'ffeb3b' %}#000{% else %}#fff{% endif %}">
+                            {{ label.name }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                    
+                    <h1 class="display-5 fw-bold text-dark mb-3">{{ page.title }}</h1>
+                    
+                    <div class="d-flex align-items-center text-muted mb-4">
+                        <img src="{{ page.issue.user.avatar_url }}" alt="{{ page.author }}" 
+                             class="rounded-circle me-3" width="40" height="40">
+                        <div>
+                            <div class="fw-semibold">{{ page.author }}</div>
+                            <small>
+                                <i class="fas fa-calendar-alt me-1"></i>
+                                {{ page.date | date: "%d.%m.%Y" }}
+                                •
+                                <i class="fas fa-comments me-1"></i>
+                                {{ page.comments_count }} komentarzy
+                                •
+                                <a href="{{ page.github_url }}" target="_blank" class="text-decoration-none">
+                                    <i class="fab fa-github me-1"></i>GitHub #{{ page.github_number }}
+                                </a>
+                            </small>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Article Content -->
+                <div class="post-content">
+                    {{ content | markdownify }}
+                </div>
+
+                <!-- Article Footer -->
+                <footer class="mt-5 pt-4 border-top">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>💬 Dyskusja</h6>
+                            <p class="small text-muted mb-3">
+                                Ten artykuł pochodzzi z GitHub Issues. Możesz dołączyć do dyskusji, 
+                                zadać pytania lub zaproponować poprawki bezpośrednio na GitHub.
+                            </p>
+                            <a href="{{ page.github_url }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                <i class="fab fa-github me-1"></i>Dołącz do dyskusji
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>🔗 Udostępnij</h6>
+                            <div class="d-flex gap-2">
+                                <a href="https://twitter.com/intent/tweet?url={{ page.url | absolute_url | url_encode }}&text={{ page.title | url_encode }}" 
+                                   target="_blank" class="btn btn-outline-info btn-sm">
+                                    <i class="fab fa-twitter"></i>
+                                </a>
+                                <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ page.url | absolute_url | url_encode }}" 
+                                   target="_blank" class="btn btn-outline-primary btn-sm">
+                                    <i class="fab fa-linkedin"></i>
+                                </a>
+                                <a href="https://www.facebook.com/sharer/sharer.php?u={{ page.url | absolute_url | url_encode }}" 
+                                   target="_blank" class="btn btn-outline-primary btn-sm">
+                                    <i class="fab fa-facebook"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </footer>
+            </article>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <div class="sticky-top" style="top: 100px;">
+                <!-- Quick Actions -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body">
+                        <h6 class="card-title">🚀 Szybkie akcje</h6>
+                        <div class="d-grid gap-2">
+                            <a href="https://github.com/{{ site.github.username }}/{{ site.github.repository }}/issues/new?template=blog-post.md" 
+                               target="_blank" class="btn btn-success btn-sm">
+                                <i class="fas fa-plus me-1"></i>Napisz artykuł
+                            </a>
+                            <a href="https://github.com/{{ site.github.username }}/{{ site.github.repository }}/issues/new?template=question.md" 
+                               target="_blank" class="btn btn-info btn-sm">
+                                <i class="fas fa-question me-1"></i>Zadaj pytanie
+                            </a>
+                            <a href="https://github.com/{{ site.github.username }}/{{ site.github.repository }}/issues/new?template=feature.md" 
+                               target="_blank" class="btn btn-warning btn-sm">
+                                <i class="fas fa-lightbulb me-1"></i>Zaproponuj funkcję
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Related Posts -->
+                {% assign related_posts = site.data.issues | where: 'category', page.category | limit: 5 %}
+                {% if related_posts.size > 1 %}
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body">
+                        <h6 class="card-title">📚 Podobne artykuły</h6>
+                        {% for post in related_posts %}
+                            {% unless post.number == page.github_number %}
+                            <div class="mb-3 pb-3 {% unless forloop.last %}border-bottom{% endunless %}">
+                                <h6 class="mb-1">
+                                    <a href="{{ post.url }}" class="text-decoration-none">
+                                        {{ post.clean_title }}
+                                    </a>
+                                </h6>
+                                <small class="text-muted">
+                                    {{ post.date }} • {{ post.comments_count }} komentarzy
+                                </small>
+                            </div>
+                            {% endunless %}
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Categories -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <h6 class="card-title">🏷️ Kategorie</h6>
+                        {% assign categories = site.data.issues | map: 'category' | uniq %}
+                        <div class="d-flex flex-wrap gap-1">
+                            {% for category in categories %}
+                            <a href="/category/{{ category | downcase }}/" 
+                               class="badge bg-secondary text-decoration-none">
+                                {{ category | capitalize }}
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reading Progress Bar -->
+<div class="progress fixed-bottom" style="height: 3px;">
+    <div class="progress-bar bg-primary" role="progressbar" id="reading-progress"></div>
+</div>
+
+<script>
+// Reading progress bar
+window.addEventListener('scroll', () => {
+    const article = document.querySelector('.post-content');
+    if (!article) return;
+    
+    const scrollTop = window.pageYOffset;
+    const docHeight = document.body.scrollHeight - window.innerHeight;
+    const scrollPercent = (scrollTop / docHeight) * 100;
+    
+    document.getElementById('reading-progress').style.width = scrollPercent + '%';
+});
+</script>

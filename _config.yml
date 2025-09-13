@@ -1,0 +1,143 @@
+# _config.yml - Optimized for Azure Web App deployment
+title: "IntelliSent Blog"
+description: "Najnowsze artykuły, poradniki i dyskusje o systemach SENT i automatyzacji przewozów"
+url: "https://intellisent.net"  # Your Azure Web App URL
+baseurl: ""  # Leave empty for root deployment
+
+# Site settings
+lang: pl-PL
+timezone: Europe/Warsaw
+author: 
+  name: "IntelliApp"
+  email: "support@intelliapp.pl"
+  url: "https://intelliapp.pl"
+
+# GitHub Issues Integration
+github:
+  username: "IntelliApp-pl"
+  repository: "intellisent-blog"
+  # GitHub token for private repos (optional)
+  token: # REMOVED_FOR_SECURITY
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+  syntax_highlighter_opts:
+    block:
+      line_numbers: true
+
+# Plugins
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap
+  - jekyll-seo-tag
+  - jekyll-paginate
+  - jekyll-github-metadata
+
+# Pagination
+paginate: 12
+paginate_path: "/page:num/"
+
+# Collections for organizing GitHub Issues
+collections:
+  posts:
+    output: true
+    permalink: /posts/:title/
+
+# Default layouts
+defaults:
+  - scope:
+      path: ""
+      type: "posts"
+    values:
+      layout: "post"
+      comments: true
+  - scope:
+      path: ""
+    values:
+      layout: "default"
+
+# Navigation
+navigation:
+  - title: "Wszystkie posty"
+    url: /
+  - title: "IntelliSent"
+    url: /category/intellisent/
+  - title: "Poradniki"  
+    url: /category/tutorial/
+  - title: "Q&A"
+    url: /category/pytanie/
+  - title: "GitHub"
+    url: https://github.com/IntelliApp-pl/intellisent-blog
+    external: true
+
+# Social links
+social:
+  github: IntelliApp-pl
+  email: support@intelliapp.pl
+  website: https://intellisent.net
+
+# SEO settings
+seo:
+  name: "IntelliSent Blog"
+  type: "Organization"
+  links:
+    - https://github.com/IntelliApp-pl
+    - https://intellisent.net
+    - https://intelliapp.pl
+
+# Google Analytics (optional)
+# google_analytics: "G-XXXXXXXXXX"
+
+# Azure-specific optimizations
+future: false
+show_drafts: false
+limit_posts: 0
+incremental: false
+
+# Exclude from processing
+exclude:
+  - .sass-cache/
+  - .jekyll-cache/
+  - gemfiles/
+  - Gemfile
+  - Gemfile.lock
+  - node_modules/
+  - vendor/bundle/
+  - vendor/cache/
+  - vendor/gems/
+  - vendor/ruby/
+  - README.md
+  - LICENSE
+  - .github/
+  - package*.json
+  - gulpfile.js
+  - webpack.config.js
+
+# Include specific files
+include:
+  - .htaccess
+  - _pages
+
+# Sass configuration for Azure
+sass:
+  sass_dir: _sass
+  style: compressed
+  
+# Azure Web App specific settings
+keep_files: [".git", ".svn"]
+encoding: "utf-8"
+markdown_ext: "markdown,mkdown,mkdn,mkd,md"
+
+# Content processing
+excerpt_separator: "<!--more-->"
+show_excerpts: true
+
+# Liquid options
+liquid:
+  error_mode: strict
+  strict_filters: false
+  strict_variables: false

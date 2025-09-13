@@ -1,0 +1,104 @@
+---
+layout: default
+permalink: /404.html
+---
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 text-center">
+            <div class="mb-5">
+                <h1 class="display-1 fw-bold text-primary">404</h1>
+                <h2 class="mb-4">Strona nie znaleziona</h2>
+                <p class="lead text-muted mb-4">
+                    Przepraszamy, ale strona której szukasz nie istnieje lub została przeniesiona.
+                </p>
+            </div>
+            
+            <div class="row g-4 mb-5">
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100 hover-lift">
+                        <div class="card-body text-center">
+                            <i class="fas fa-home fa-3x text-primary mb-3"></i>
+                            <h5>Strona główna</h5>
+                            <p class="text-muted small">Wróć do listy wszystkich artykułów</p>
+                            <a href="{{ '/' | relative_url }}" class="btn btn-primary">Przejdź</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100 hover-lift">
+                        <div class="card-body text-center">
+                            <i class="fas fa-search fa-3x text-info mb-3"></i>
+                            <h5>Wyszukaj</h5>
+                            <p class="text-muted small">Znajdź artykuł używając wyszukiwarki</p>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="search-404" placeholder="Szukaj...">
+                                <button class="btn btn-info" type="button" onclick="search404()">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100 hover-lift">
+                        <div class="card-body text-center">
+                            <i class="fab fa-github fa-3x text-success mb-3"></i>
+                            <h5>GitHub Issues</h5>
+                            <p class="text-muted small">Przeglądaj wszystkie tematy na GitHub</p>
+                            <a href="https://github.com/{{ site.github.username }}/{{ site.github.repository }}/issues" 
+                               target="_blank" class="btn btn-success">Otwórz</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">💡 Może Cię zainteresuje</h5>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <a href="https://github.com/{{ site.github.username }}/{{ site.github.repository }}/issues/new?template=blog-post.md" 
+                               target="_blank" class="btn btn-outline-success w-100">
+                                <i class="fas fa-edit me-2"></i>Napisz artykuł
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <a href="https://github.com/{{ site.github.username }}/{{ site.github.repository }}/issues/new?template=question.md" 
+                               target="_blank" class="btn btn-outline-info w-100">
+                                <i class="fas fa-question me-2"></i>Zadaj pytanie
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-4">
+                <small class="text-muted">
+                    Jeśli uważasz, że to błąd, możesz 
+                    <a href="https://github.com/{{ site.github.username }}/{{ site.github.repository }}/issues/new?template=bug.md" 
+                       target="_blank">zgłosić problem na GitHub</a>.
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function search404() {
+    const query = document.getElementById('search-404').value.trim();
+    if (query) {
+        // Redirect to main page with search parameter
+        window.location.href = '{{ "/" | relative_url }}?search=' + encodeURIComponent(query);
+    }
+}
+
+// Allow search on Enter key
+document.getElementById('search-404').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        search404();
+    }
+});
+</script>

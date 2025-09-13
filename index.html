@@ -1,0 +1,275 @@
+---
+layout: default
+---
+
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center min-vh-50">
+            <div class="col-lg-8">
+                <h1 class="display-4 fw-bold mb-4">
+                    📚 IntelliSent Blog
+                </h1>
+                <p class="lead mb-4">
+                    Najnowsze artykuły, poradniki i dyskusje o systemach SENT, automatyzacji przewozów 
+                    i nowoczesnych rozwiązaniach dla firm transportowych.
+                </p>
+                <div class="d-flex flex-wrap gap-3">
+                    <a href="https://github.com/{{ site.github.username }}/{{ site.github.repository }}/issues/new?template=blog-post.md" 
+                       class="btn btn-light btn-lg" target="_blank">
+                        <i class="fas fa-edit me-2"></i>Napisz artykuł
+                    </a>
+                    <a href="#latest-posts" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-arrow-down me-2"></i>Przeglądaj posty
+                    </a>
+                    <a href="https://intellisent.net" target="_blank" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-external-link-alt me-2"></i>IntelliSent.net
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-4 text-center">
+                <div class="hero-stats">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="stat-card bg-white bg-opacity-10 backdrop-blur rounded p-3">
+                                <div class="h4 fw-bold mb-1">{{ site.data.issues.size | default: 0 }}</div>
+                                <div class="small">Artykułów</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="stat-card bg-white bg-opacity-10 backdrop-blur rounded p-3">
+                                <div class="h4 fw-bold mb-1">{{ site.data.issues | map: 'comments_count' | sum | default: 0 }}</div>
+                                <div class="small">Komentarzy</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Search Section -->
+<section class="py-4 bg-light">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+                <div class="search-box position-relative">
+                    <div class="input-group input-group-lg">
+                        <span class="input-group-text">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <input type="text" class="form-control" 
+                               id="search-input"
+                               placeholder="Szukaj artykułów..."
+                               autocomplete="off">
+                    </div>
+                    <div id="search-results" class="search-results" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Filter Categories -->
+<section class="py-4 bg-white border-bottom">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex flex-wrap justify-content-center gap-2">
+                    <button class="btn btn-outline-primary filter-btn active" data-filter="all">
+                        <i class="fas fa-layer-group me-1"></i>Wszystkie
+                    </button>
+                    <button class="btn btn-outline-primary filter-btn" data-filter="intellisent">
+                        <i class="fas fa-truck me-1"></i>IntelliSent
+                    </button>
+                    <button class="btn btn-outline-primary filter-btn" data-filter="tutorial">
+                        <i class="fas fa-graduation-cap me-1"></i>Poradniki
+                    </button>
+                    <button class="btn btn-outline-primary filter-btn" data-filter="pytanie">
+                        <i class="fas fa-question-circle me-1"></i>Q&A
+                    </button>
+                    <button class="btn btn-outline-primary filter-btn" data-filter="enhancement">
+                        <i class="fas fa-lightbulb me-1"></i>Nowe funkcje
+                    </button>
+                    <button class="btn btn-outline-primary filter-btn" data-filter="artykuł">
+                        <i class="fas fa-newspaper me-1"></i>Artykuły
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Blog Posts Grid -->
+<section class="py-5" id="latest-posts">
+    <div class="container">
+        {% if site.data.issues.size > 0 %}
+        <div class="row g-4" id="posts-grid">
+            {% assign sorted_issues = site.data.issues | sort: 'created_at' | reverse %}
+            {% for issue in sorted_issues limit: 12 %}
+            <div class="col-lg-4 col-md-6 blog-post hover-lift" 
+                 data-labels="{% for label in issue.labels %}{{ label.name | downcase }}{% unless forloop.last %} {% endunless %}{% endfor %}"
+                 data-category="{{ issue.category | downcase }}">
+                
+                <article class="card h-100 border-0 shadow-sm blog-post-card">
+                    <!-- Labels as header -->
+                    <div class="card-header border-0 bg-transparent pb-2">
+                        <div class="d-flex flex-wrap gap-1">
+                            {% for label in issue.labels %}
+                            <span class="badge rounded-pill" 
+                                  style="background-color: #{{ label.color }}; color: {% if label.color == 'ffffff' or label.color == 'ffeb3b' %}#000{% else %}#fff{% endif %}">
+                                {{ label.name }}
+                            </span>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title mb-3">
+                            <a href="{{ issue.url }}" class="text-decoration-none text-dark stretched-link">
+                                {{ issue.clean_title }}
+                            </a>
+                        </h5>
+                        
+                        <!-- Excerpt -->
+                        <p class="card-text text-muted flex-grow-1">
+                            {% if issue.excerpt and issue.excerpt != '' %}
+                                {{ issue.excerpt }}
+                            {% else %}
+                                Kliknij aby przeczytać więcej...
+                            {% endif %}
+                        </p>
+
+                        <!-- Meta info -->
+                        <div class="d-flex justify-content-between align-items-center text-muted small">
+                            <div class="d-flex align-items-center">
+                                <img src="{{ issue.user.avatar_url }}" alt="{{ issue.user.login }}" 
+                                     class="rounded-circle me-2" width="24" height="24">
+                                <span>{{ issue.user.login }}</span>
+                            </div>
+                            <div>
+                                <i class="fas fa-calendar-alt me-1"></i>
+                                {{ issue.date }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer with engagement -->
+                    <div class="card-footer border-0 bg-transparent">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                <i class="fas fa-comments me-1"></i>
+                                {{ issue.comments_count }} komentarzy
+                            </small>
+                            <small>
+                                <a href="{{ issue.html_url }}" target="_blank" 
+                                   class="text-muted text-decoration-none"
+                                   data-bs-toggle="tooltip" 
+                                   title="Otwórz na GitHub">
+                                    <i class="fab fa-github me-1"></i>GitHub
+                                </a>
+                            </small>
+                        </div>
+                    </div>
+                </article>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Load More Button -->
+        {% if site.data.issues.size > 12 %}
+        <div class="row mt-5">
+            <div class="col-12 text-center">
+                <button class="btn btn-outline-primary btn-lg" id="load-more-btn" data-page="1">
+                    <i class="fas fa-chevron-down me-2"></i>Wczytaj więcej artykułów
+                </button>
+            </div>
+        </div>
+        {% endif %}
+
+        {% else %}
+        <!-- Empty state -->
+        <div class="row">
+            <div class="col-12 text-center py-5">
+                <div class="mb-4">
+                    <i class="fas fa-newspaper text-muted" style="font-size: 4rem;"></i>
+                </div>
+                <h3 class="text-muted mb-3">Brak artykułów</h3>
+                <p class="text-muted mb-4">
+                    Nie znaleziono żadnych artykułów. Może chciałbyś napisać pierwszy?
+                </p>
+                <a href="https://github.com/{{ site.github.username }}/{{ site.github.repository }}/issues/new?template=blog-post.md" 
+                   class="btn btn-primary btn-lg" target="_blank">
+                    <i class="fas fa-plus me-2"></i>Napisz pierwszy artykuł
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Call to Action Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row justify-content-center text-center">
+            <div class="col-lg-8">
+                <h3 class="mb-4">🚀 Dołącz do społeczności IntelliSent!</h3>
+                <p class="lead mb-4">
+                    Dziel się wiedzą, zadawaj pytania i pomagaj innym w lepszym wykorzystaniu systemów SENT.
+                </p>
+                <div class="d-flex flex-wrap justify-content-center gap-3">
+                    <a href="https://github.com/{{ site.github.username }}/{{ site.github.repository }}/issues/new?template=blog-post.md" 
+                       class="btn btn-success btn-lg" target="_blank">
+                        <i class="fas fa-edit me-2"></i>Napisz artykuł
+                    </a>
+                    <a href="https://github.com/{{ site.github.username }}/{{ site.github.repository }}/issues/new?template=question.md" 
+                       class="btn btn-info btn-lg" target="_blank">
+                        <i class="fas fa-question me-2"></i>Zadaj pytanie
+                    </a>
+                    <a href="https://github.com/{{ site.github.username }}/{{ site.github.repository }}/issues/new?template=feature.md" 
+                       class="btn btn-warning btn-lg" target="_blank">
+                        <i class="fas fa-lightbulb me-2"></i>Zaproponuj funkcję
+                    </a>
+                    <a href="https://github.com/{{ site.github.username }}/{{ site.github.repository }}" 
+                       class="btn btn-dark btn-lg" target="_blank">
+                        <i class="fab fa-github me-2"></i>Zobacz GitHub
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Statistics Section -->
+{% if site.data.github_issues %}
+<section class="py-4 bg-primary text-white">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-md-3 col-6 mb-3">
+                <div class="h4 fw-bold">{{ site.data.github_issues.total_count | default: 0 }}</div>
+                <small>Wszystkich postów</small>
+            </div>
+            <div class="col-md-3 col-6 mb-3">
+                <div class="h4 fw-bold">{{ site.data.issues | where: 'is_article', true | size | default: 0 }}</div>
+                <small>Artykułów</small>
+            </div>
+            <div class="col-md-3 col-6 mb-3">
+                <div class="h4 fw-bold">{{ site.data.issues | where: 'is_question', true | size | default: 0 }}</div>
+                <small>Pytań</small>
+            </div>
+            <div class="col-md-3 col-6 mb-3">
+                <div class="h4 fw-bold">{{ site.data.issues | where: 'is_tutorial', true | size | default: 0 }}</div>
+                <small>Poradników</small>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12 text-center">
+                <small class="opacity-75">
+                    Ostatnia aktualizacja: {{ site.data.github_issues.last_updated | date: "%d.%m.%Y %H:%M" | default: "nigdy" }}
+                </small>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}

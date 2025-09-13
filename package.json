@@ -1,0 +1,35 @@
+{
+  "name": "intellisent-blog",
+  "version": "1.0.0",
+  "description": "IntelliSent Blog with GitHub Issues integration",
+  "main": "index.js",
+  "scripts": {
+    "build": "jekyll build",
+    "serve": "jekyll serve",
+    "clean": "jekyll clean"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/IntelliApp-pl/intellisent-blog.git"
+  },
+  "keywords": [
+    "intellisent",
+    "sent",
+    "blog",
+    "jekyll",
+    "github-issues"
+  ],
+  "author": "IntelliApp",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/IntelliApp-pl/intellisent-blog/issues"
+  },
+  "homepage": "https://github.com/IntelliApp-pl/intellisent-blog#readme",
+  "devDependencies": {
+    "terser": "^5.16.0",
+    "postcss": "^8.4.21",
+    "postcss-cli": "^10.1.0",
+    "autoprefixer": "^10.4.13",
+    "cssnano": "^5.1.15"
+  }
+}

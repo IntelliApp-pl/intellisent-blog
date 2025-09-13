@@ -1,0 +1,209 @@
+---
+layout: default
+---
+
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Issue Header -->
+            <article class="issue-post">
+                <header class="mb-4">
+                    <div class="mb-3">
+                        {% for label in page.labels %}
+                        <span class="badge rounded-pill me-1" 
+                              style="background-color: #{{ label.color }}; color: {% if label.color == 'ffffff' or label.color == 'ffeb3b' %}#000{% else %}#fff{% endif %}">
+                            {{ label.name }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                    
+                    <h1 class="display-5 fw-bold text-dark mb-3">{{ page.title }}</h1>
+                    
+                    <div class="alert alert-info d-flex align-items-center" role="alert">
+                        <i class="fab fa-github me-2"></i>
+                        <div>
+                            <strong>GitHub Issue</strong> - Ten post pochodzi z GitHub Issues. 
+                            <a href="{{ page.github_url }}" target="_blank" class="alert-link">
+                                Dołącz do dyskusji na GitHub
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex align-items-center text-muted mb-4">
+                        <img src="{{ page.issue.user.avatar_url }}" alt="{{ page.author }}" 
+                             class="rounded-circle me-3" width="40" height="40">
+                        <div>
+                            <div class="fw-semibold">
+                                <a href="{{ page.issue.user.html_url }}" target="_blank" class="text-decoration-none">
+                                    {{ page.author }}
+                                </a>
+                            </div>
+                            <small>
+                                <i class="fas fa-calendar-alt me-1"></i>
+                                {{ page.date | date: "%d.%m.%Y" }}
+                                •
+                                <i class="fas fa-comments me-1"></i>
+                                {{ page.comments_count }} komentarzy
+                                •
+                                <i class="fas fa-hashtag me-1"></i>
+                                Issue #{{ page.github_number }}
+                            </small>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Issue Content -->
+                <div class="issue-content">
+                    {{ content | markdownify }}
+                </div>
+
+                <!-- Issue Actions -->
+                <div class="mt-5 pt-4 border-top">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h6>💬 Dyskusja na GitHub</h6>
+                            <p class="text-muted">
+                                Ta treść jest zarządzana jako GitHub Issue. Możesz:
+                            </p>
+                            <ul class="text-muted small">
+                                <li>Dodawać komentarze i odpowiedzi</li>
+                                <li>Reagować na treść (👍 👎 ❤️ 🎉)</li>
+                                <li>Proponować zmiany i poprawki</li>
+                                <li>Udostępniać innym osobom</li>
+                            </ul>
+                            
+                            <div class="d-flex gap-2 flex-wrap">
+                                <a href="{{ page.github_url }}" target="_blank" class="btn btn-primary">
+                                    <i class="fab fa-github me-1"></i>Otwórz na GitHub
+                                </a>
+                                <a href="{{ page.github_url }}#new_comment_field" target="_blank" class="btn btn-outline-primary">
+                                    <i class="fas fa-comment me-1"></i>Dodaj komentarz
+                                </a>
+                                <a href="https://github.com/{{ site.github.username }}/{{ site.github.repository }}/issues/{{ page.github_number }}/reactions" 
+                                   target="_blank" class="btn btn-outline-secondary">
+                                    <i class="fas fa-heart me-1"></i>Reaguj
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>🔗 Udostępnij</h6>
+                            <div class="d-flex gap-2 flex-wrap">
+                                <a href="https://twitter.com/intent/tweet?url={{ page.url | absolute_url | url_encode }}&text={{ page.title | url_encode }}&via=IntelliApp" 
+                                   target="_blank" class="btn btn-outline-info btn-sm">
+                                    <i class="fab fa-twitter"></i>
+                                </a>
+                                <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ page.url | absolute_url | url_encode }}" 
+                                   target="_blank" class="btn btn-outline-primary btn-sm">
+                                    <i class="fab fa-linkedin"></i>
+                                </a>
+                                <a href="https://www.facebook.com/sharer/sharer.php?u={{ page.url | absolute_url | url_encode }}" 
+                                   target="_blank" class="btn btn-outline-primary btn-sm">
+                                    <i class="fab fa-facebook"></i>
+                                </a>
+                                <button onclick="copyToClipboard('{{ page.url | absolute_url }}')" class="btn btn-outline-secondary btn-sm">
+                                    <i class="fas fa-link"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <div class="sticky-top" style="top: 100px;">
+                <!-- Issue Info -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body">
+                        <h6 class="card-title">ℹ️ Informacje o Issue</h6>
+                        <ul class="list-unstyled small">
+                            <li class="mb-2">
+                                <strong>Numer:</strong> #{{ page.github_number }}
+                            </li>
+                            <li class="mb-2">
+                                <strong>Autor:</strong> 
+                                <a href="{{ page.issue.user.html_url }}" target="_blank">{{ page.author }}</a>
+                            </li>
+                            <li class="mb-2">
+                                <strong>Utworzono:</strong> {{ page.date | date: "%d.%m.%Y" }}
+                            </li>
+                            <li class="mb-2">
+                                <strong>Komentarze:</strong> {{ page.comments_count }}
+                            </li>
+                            <li class="mb-2">
+                                <strong>Kategoria:</strong> {{ page.category | capitalize }}
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body">
+                        <h6 class="card-title">🚀 Dodaj swoją treść</h6>
+                        <div class="d-grid gap-2">
+                            <a href="https://github.com/{{ site.github.username }}/{{ site.github.repository }}/issues/new?template=blog-post.md" 
+                               target="_blank" class="btn btn-success btn-sm">
+                                <i class="fas fa-edit me-1"></i>Napisz artykuł
+                            </a>
+                            <a href="https://github.com/{{ site.github.username }}/{{ site.github.repository }}/issues/new?template=question.md" 
+                               target="_blank" class="btn btn-info btn-sm">
+                                <i class="fas fa-question me-1"></i>Zadaj pytanie
+                            </a>
+                            <a href="https://github.com/{{ site.github.username }}/{{ site.github.repository }}/issues/new?template=feature.md" 
+                               target="_blank" class="btn btn-warning btn-sm">
+                                <i class="fas fa-lightbulb me-1"></i>Zaproponuj funkcję
+                            </a>
+                            <a href="https://github.com/{{ site.github.username }}/{{ site.github.repository }}/issues/new?template=bug.md" 
+                               target="_blank" class="btn btn-danger btn-sm">
+                                <i class="fas fa-bug me-1"></i>Zgłoś błąd
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Related Issues -->
+                {% assign related_issues = site.data.issues | where: 'category', page.category | limit: 6 %}
+                {% if related_issues.size > 1 %}
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <h6 class="card-title">📚 Powiązane tematy</h6>
+                        {% for issue in related_issues %}
+                            {% unless issue.number == page.github_number %}
+                            <div class="mb-3 pb-3 {% unless forloop.last %}border-bottom{% endunless %}">
+                                <h6 class="mb-1 small">
+                                    <a href="{{ issue.url }}" class="text-decoration-none">
+                                        {{ issue.clean_title }}
+                                    </a>
+                                </h6>
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <small class="text-muted">
+                                        {{ issue.date }} • {{ issue.user.login }}
+                                    </small>
+                                    <span class="badge bg-light text-dark">{{ issue.comments_count }}</span>
+                                </div>
+                            </div>
+                            {% endunless %}
+                        {% endfor %}
+                        <div class="text-center">
+                            <a href="/category/{{ page.category | downcase }}/" class="btn btn-outline-primary btn-sm">
+                                Zobacz wszystkie w {{ page.category }}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(function() {
+        // Show toast or alert
+        alert('Link skopiowany do schowka!');
+    });
+}
+</script>

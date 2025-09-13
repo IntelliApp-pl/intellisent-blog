@@ -1,0 +1,304 @@
+# .github/workflows/deploy-to-azure-auto.yml
+name: 🤖 Auto Deploy to Azure Web App
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - '_posts/**'
+      - '_layouts/**' 
+      - '_includes/**'
+      - '_sass/**'
+      - 'assets/**'
+      - '_config.yml'
+      - 'Gemfile*'
+  
+  issues:
+    types: [ opened, edited, labeled, unlabeled ]
+  
+  issue_comment:
+    types: [ created, edited, deleted ]
+    
+  schedule:
+    # Auto-rebuild daily at 6 AM UTC to fetch new GitHub issues
+    - cron: '0 6 * * *'
+
+  workflow_dispatch:  # Allow manual triggers too
+
+env:
+  JEKYLL_ENV: production
+  NODE_VERSION: '18'
+  RUBY_VERSION: '3.1'
+
+jobs:
+  # Job 1: Check if deployment is needed
+  check-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      should-deploy: ${{ steps.changes.outputs.should-deploy }}
+      deploy-reason: ${{ steps.changes.outputs.reason }}
+    
+    steps:
+    - name: 📥 Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 2
+
+    - name: 🔍 Check for Changes
+      id: changes
+      run: |
+        if [[ "${{ github.event_name }}" == "issues" ]] || [[ "${{ github.event_name }}" == "issue_comment" ]]; then
+          echo "should-deploy=true" >> $GITHUB_OUTPUT
+          echo "reason=GitHub Issues updated" >> $GITHUB_OUTPUT
+        elif [[ "${{ github.event_name }}" == "schedule" ]]; then
+          echo "should-deploy=true" >> $GITHUB_OUTPUT  
+          echo "reason=Scheduled rebuild" >> $GITHUB_OUTPUT
+        elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          echo "should-deploy=true" >> $GITHUB_OUTPUT
+          echo "reason=Manual trigger" >> $GITHUB_OUTPUT
+        elif git diff --quiet HEAD~1 HEAD -- '_posts' '_layouts' '_includes' '_sass' 'assets' '_config.yml' 'Gemfile*'; then
+          echo "should-deploy=false" >> $GITHUB_OUTPUT
+          echo "reason=No relevant changes detected" >> $GITHUB_OUTPUT
+        else
+          echo "should-deploy=true" >> $GITHUB_OUTPUT
+          echo "reason=Code changes detected" >> $GITHUB_OUTPUT
+        fi
+
+  # Job 2: Build and Deploy
+  build-and-deploy:
+    needs: check-changes
+    if: needs.check-changes.outputs.should-deploy == 'true'
+    runs-on: ubuntu-latest
+    
+    environment: 
+      name: production
+      url: ${{ steps.deploy.outputs.webapp-url }}
+
+    steps:
+    - name: 📥 Checkout Repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: 💾 Cache Dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          vendor/bundle
+          node_modules
+          .sass-cache
+        key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-gems-
+          ${{ runner.os }}-
+
+    - name: 🔧 Setup Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ env.RUBY_VERSION }}
+        bundler-cache: true
+
+    - name: 🟢 Setup Node.js (for asset optimization)
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+
+    - name: 📦 Install Dependencies
+      run: |
+        # Ruby dependencies
+        gem install bundler
+        bundle config path vendor/bundle
+        bundle install --jobs 4 --retry 3
+        
+        # Node.js for asset optimization
+        if [ -f "package.json" ]; then
+          npm ci
+        else
+          npm init -y
+          npm install --save-dev terser postcss postcss-cli autoprefixer
+        fi
+
+    - name: 🔄 Fetch Latest GitHub Issues
+      run: |
+        echo "Fetching latest issues for blog content..."
+        # The Jekyll plugin will automatically fetch issues during build
+        
+    - name: 🏗️ Build Jekyll Site
+      run: |
+        echo "Building Jekyll site with GitHub Issues..."
+        bundle exec jekyll build \
+          --destination ./_site \
+          --verbose \
+          --trace
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        JEKYLL_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: 🎯 Optimize Assets
+      run: |
+        echo "Optimizing CSS and JavaScript..."
+        
+        # Minify CSS
+        find ./_site -name "*.css" -not -path "*/vendor/*" -exec sh -c '
+          if command -v postcss >/dev/null 2>&1; then
+            postcss "$1" --use autoprefixer --use cssnano --no-map -o "$1"
+          fi
+        ' _ {} \;
+        
+        # Minify JavaScript
+        find ./_site -name "*.js" -not -path "*/vendor/*" -exec sh -c '
+          if command -v terser >/dev/null 2>&1; then
+            terser "$1" --compress --mangle -o "$1"
+          fi
+        ' _ {} \;
+        
+        echo "Asset optimization complete!"
+
+    - name: 🧹 Clean and Prepare
+      run: |
+        # Remove development files
+        find ./_site -name "*.scss" -delete
+        find ./_site -name "*.sass" -delete  
+        find ./_site -name "*.map" -delete
+        find ./_site -name ".DS_Store" -delete
+        
+        # Create .htaccess for better caching (if Apache)
+        cat > ./_site/.htaccess << 'EOF'
+        # Cache static assets for 1 year
+        <FilesMatch "\.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$">
+          ExpiresActive On
+          ExpiresDefault "access plus 1 year"
+        </FilesMatch>
+        
+        # Cache HTML for 1 hour
+        <FilesMatch "\.html$">
+          ExpiresActive On
+          ExpiresDefault "access plus 1 hour"
+        </FilesMatch>
+        EOF
+
+    - name: 📊 Build Statistics
+      run: |
+        echo "## 📊 Build Statistics" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "- **Reason**: ${{ needs.check-changes.outputs.deploy-reason }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Files Generated**: $(find ./_site -type f | wc -l)" >> $GITHUB_STEP_SUMMARY
+        echo "- **Total Size**: $(du -sh ./_site | cut -f1)" >> $GITHUB_STEP_SUMMARY
+        echo "- **HTML Files**: $(find ./_site -name "*.html" | wc -l)" >> $GITHUB_STEP_SUMMARY
+        echo "- **CSS Files**: $(find ./_site -name "*.css" | wc -l)" >> $GITHUB_STEP_SUMMARY
+        echo "- **JavaScript Files**: $(find ./_site -name "*.js" | wc -l)" >> $GITHUB_STEP_SUMMARY
+        echo "- **Images**: $(find ./_site \( -name "*.jpg" -o -name "*.png" -o -name "*.gif" -o -name "*.svg" \) | wc -l)" >> $GITHUB_STEP_SUMMARY
+
+    - name: 🔐 Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: 🚀 Deploy to Azure Web App Public Folder
+      id: deploy
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
+        resource-group-name: ${{ secrets.AZURE_RESOURCE_GROUP }}
+        package: './_site'
+        # Deploy to /public folder specifically
+        clean: true
+
+    - name: 🔧 Configure Azure Web App Settings
+      run: |
+        # Set custom startup command if needed for /public folder
+        az webapp config set \
+          --name ${{ secrets.AZURE_WEBAPP_NAME }} \
+          --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+          --startup-file "public"
+        
+        # Configure static files serving
+        az webapp config set \
+          --name ${{ secrets.AZURE_WEBAPP_NAME }} \
+          --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+          --generic-configurations '{"WEBSITE_WEBDEPLOY_USE_SCM": false}'
+
+    - name: 🔄 Warm Up Application
+      run: |
+        echo "Warming up application..."
+        sleep 30
+        
+        WEBAPP_URL="${{ steps.deploy.outputs.webapp-url }}"
+        
+        # Multiple warm-up requests
+        for i in {1..3}; do
+          echo "Warm-up request $i/3..."
+          curl -s -f "$WEBAPP_URL" > /dev/null || echo "Warm-up $i failed"
+          sleep 10
+        done
+
+    - name: 🧪 Post-Deployment Tests
+      run: |
+        WEBAPP_URL="${{ steps.deploy.outputs.webapp-url }}"
+        
+        echo "🔍 Running post-deployment tests..."
+        
+        # Test main page
+        HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$WEBAPP_URL")
+        if [ "$HTTP_STATUS" -eq 200 ]; then
+          echo "✅ Main page: OK"
+        else
+          echo "❌ Main page: Failed (HTTP $HTTP_STATUS)"
+          exit 1
+        fi
+        
+        # Test blog page if exists
+        BLOG_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$WEBAPP_URL/posts/" || echo "404")
+        if [ "$BLOG_STATUS" -eq 200 ]; then
+          echo "✅ Blog page: OK"
+        else
+          echo "⚠️ Blog page: Not found (HTTP $BLOG_STATUS)"
+        fi
+        
+        # Test CSS loading
+        CSS_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$WEBAPP_URL/assets/css/main.css" || echo "404")
+        if [ "$CSS_STATUS" -eq 200 ]; then
+          echo "✅ CSS assets: OK"
+        else
+          echo "⚠️ CSS assets: Check manual (HTTP $CSS_STATUS)"
+        fi
+
+    - name: 📱 Send Notification (Optional)
+      if: always()
+      run: |
+        if [ "${{ job.status }}" == "success" ]; then
+          echo "🎉 Deployment successful!"
+          # Add Slack/Teams notification here if needed
+        else
+          echo "❌ Deployment failed!"
+          # Add failure notifications here
+        fi
+
+    - name: 📝 Final Summary
+      if: always()
+      run: |
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## 🎯 Deployment Result" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        if [ "${{ job.status }}" == "success" ]; then
+          echo "✅ **Status**: Successful" >> $GITHUB_STEP_SUMMARY
+          echo "🌐 **Live URL**: ${{ steps.deploy.outputs.webapp-url }}" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ **Status**: Failed" >> $GITHUB_STEP_SUMMARY
+        fi
+        echo "⏰ **Completed**: $(date)" >> $GITHUB_STEP_SUMMARY
+        echo "🔄 **Trigger**: ${{ needs.check-changes.outputs.deploy-reason }}" >> $GITHUB_STEP_SUMMARY
+
+  # Job 3: Cleanup old deployments (optional)
+  cleanup:
+    needs: [check-changes, build-and-deploy]
+    if: always() && needs.build-and-deploy.result == 'success'
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 🧹 Cleanup Old Artifacts
+      run: |
+        echo "Cleanup job - manage old deployment artifacts if needed"
+        # Add cleanup logic here if you want to manage old builds
