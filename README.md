@@ -68,6 +68,10 @@ bundle install
 
 # Instalacja zależności Node.js (opcjonalnie)
 npm install
+
+# Konfiguracja zmiennych środowiskowych (opcjonalnie)
+cp .env.example .env
+# Edytuj .env i dodaj swój GitHub token jeśli potrzebujesz
 ```
 
 ### Uruchomienie lokalnie
@@ -89,6 +93,21 @@ bundle exec jekyll serve --livereload
 bundle exec jekyll build
 
 # Pliki będą w folderze _site/
+```
+
+### Zmienne środowiskowe
+
+Aplikacja obsługuje następujące zmienne środowiskowe:
+
+- `GITHUB_TOKEN` - GitHub Personal Access Token (opcjonalny)
+  - Wymagany tylko dla prywatnych repozytoriów lub zwiększenia limitów API
+  - Utwórz token na: https://github.com/settings/tokens
+  - Wymagane uprawnienia: `repo` (dla prywatnych repozytoriów) lub `public_repo`
+
+```bash
+# Przykład użycia
+export GITHUB_TOKEN="your_token_here"
+bundle exec jekyll serve
 ```
 
 ## 🚀 Deployment
