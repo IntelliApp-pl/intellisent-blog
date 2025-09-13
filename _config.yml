@@ -17,7 +17,7 @@ github:
   username: "IntelliApp-pl"
   repository: "intellisent-blog"
   # GitHub token for private repos (optional)
-  token: # REMOVED_FOR_SECURITY
+  # token: # Remove token from public repo for security
 
 # Build settings
 markdown: kramdown
