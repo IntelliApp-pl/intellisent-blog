@@ -122,10 +122,10 @@ include:
   - .htaccess
   - _pages
 
-# Sass configuration for Azure
-sass:
-  sass_dir: _sass
-  style: compressed
+# Sass configuration for Azure (disabled for testing)
+# sass:
+#   sass_dir: _sass
+#   style: compressed
   
 # Azure Web App specific settings
 keep_files: [".git", ".svn"]
